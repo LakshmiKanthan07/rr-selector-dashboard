@@ -1,0 +1,8 @@
+*.csv
+*.json
+data/
+outputs/
+SupeRR_Selector_Research/
+Data Pack/
+__pycache__/
+*.pyc
