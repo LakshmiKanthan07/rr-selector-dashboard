@@ -1,10 +1,76 @@
-# SupeRR Selector Season 2: Round 1
+# Who Delivers Under Pressure? Rajasthan Royals, IPL 2027
 
-Help Shape Rajasthan Royals' IPL 2027 Auction Strategy. Round 1: Identify the Most Reliable Players Under Pressure.
+**SupeRR Selector Season 2: Help Shape Rajasthan Royals' IPL 2027 Auction Strategy**
+Round 1: Identify the Most Reliable Players Under Pressure
 
-- `index.html`: the interactive dashboard (single self-contained file, no backend).
-- `RR_IPL2027_Pressure_Reliability_Report.pdf`: methodology, formulas, Top 10 batters and bowlers, recommended auction targets and limitations.
-- `src/`: scoring pipeline (pressure index, reliability model, coach alignment, auction fit).
-- `dashboard/`: scripts that build the dashboard and the report from the pipeline outputs.
+**[Open the interactive dashboard](https://lakshmikanthan07.github.io/rr-selector-dashboard/)** | **[Read the report (PDF)](RR_IPL2027_Pressure_Reliability_Report.pdf)**
 
-The dataset and the processed data files are **not** included in this repository. The scripts expect the data pack under `data/raw/` and pipeline outputs under `SupeRR_Selector_Research/outputs/`, which are kept private.
+---
+
+## Summary
+
+We scored **311 batters and 249 bowlers** on **194,014 ball-by-ball deliveries** from 883 IPL and T20I matches (2022 onwards) and ranked them by a **Pressure Reliability Index (PRI)**: a 0-100 score that rewards players who stay effective, and consistent, in high-pressure match situations. We then screened 560 player profiles against Rajasthan Royals' squad gaps to produce **9 recommended auction targets**.
+
+### Top 10 most reliable batters under pressure
+
+| # | Batter | PRI | | # | Bowler | PRI |
+|---|---|---|---|---|---|---|
+| 1 | Phil Salt | 85.4 | | 1 | Jasprit Bumrah | 76.6 |
+| 2 | Jos Buttler | 84.8 | | 2 | Matheesha Pathirana | 74.9 |
+| 3 | Heinrich Klaasen | 82.8 | | 3 | Arshdeep Singh | 73.4 |
+| 4 | Rinku Singh | 82.2 | | 4 | Josh Hazlewood | 73.1 |
+| 5 | Naman Dhir | 80.8 | | 5 | Mustafizur Rahman | 71.9 |
+| 6 | Suryakumar Yadav | 79.8 | | 6 | Bhuvneshwar Kumar | 71.8 |
+| 7 | Tim David | 78.3 | | 7 | Varun Chakravarthy | 70.5 |
+| 8 | Namboori Tilak Varma | 78.3 | | 8 | Jofra Archer | 69.8 |
+| 9 | Tristan Stubbs | 78.0 | | 9 | Nathan Ellis | 69.8 |
+| 10 | Rajat Patidar | 77.0 | | 10 | Haris Rauf | 69.5 |
+
+### Recommended auction targets
+
+| Gap in the RR squad | Targets |
+|---|---|
+| Explosive opening partner | Phil Salt, Tim David |
+| Middle-order spin counter and chase finisher | Jos Buttler, Naman Dhir |
+| High-pace death-overs bowler | Matheesha Pathirana, Josh Hazlewood, Shaheen Afridi |
+| Attacking spinner | Sunil Narine, Varun Chakravarthy |
+| Lower-order all-rounder | no candidate cleared the quality bar |
+
+Each pick has its evidence, squad fit and risks in the report and on the dashboard.
+
+## How it works
+
+1. **Pressure, per delivery.** A 0-1 index combines required run rate (40%), wickets remaining (25%), innings stage (20%) and, in the first innings, the deficit against a par run rate (15%). Balls scoring 0.50 or more count as pressure balls (about 8% of all deliveries, mostly in the death overs). Bowlers have a matching bowling-pressure index.
+2. **Player score.** Seven components: overall quality, consistency, performance under pressure, consistency under pressure, plus boundary, strike-rotation and acceleration for batters, or wicket quality, dot balls and economy control for bowlers. Pressure performance and consistency carry 40% of the weight.
+3. **Small samples are shrunk.** Quality and consistency are pulled toward the population mean with weight n / (n + 15), so a few good games cannot top the list.
+4. **Stress test.** Every player is re-ranked under 2,000 random re-weightings. The dashboard shows how often each Top 10 name stays in the Top 10 (for example, 6 of 10 batters and 6 of 10 bowlers do so in at least 90% of trials).
+5. **Auction fit.** `CAFS = 0.40 PRI + 0.30 coach-alignment + 0.20 squad-gap fit + 0.10 versatility`.
+
+All formulas, with their weights and cut-offs, are in section 2 of the report.
+
+## Limitations
+
+- Pressure situations are rare, so individual pressure samples are small. Players with few pressure innings are flagged.
+- The coach-alignment score overlaps heavily with PRI (r = 0.93 for batters, 0.90 for bowlers), so the shortlist is mainly a pressure ranking filtered by squad need.
+- "Realistic target" only means "not on a short, hand-written retention list". Prices, retentions and availability are not in the data.
+- Nationality is inferred from T20I team appearances, with a name-list fallback for players with no T20I record in the pack.
+- The source pipeline tagged every bowler to the pace gap; the dashboard and report assign bowlers by bowling type instead.
+
+## Repository
+
+```
+index.html                                   interactive dashboard (single file, no backend)
+RR_IPL2027_Pressure_Reliability_Report.pdf   methodology, formulas, rankings, picks, limitations
+src/                                         scoring pipeline: pressure, reliability model, coach alignment, auction fit
+dashboard/build_data.py                      builds the dashboard data from pipeline outputs
+dashboard/template.html                      dashboard template
+dashboard/build_report.py                    builds the PDF report
+```
+
+## Data and reproducibility
+
+The dataset and all processed data files are deliberately **not published** in this repository. The scripts are included so the method can be inspected; they expect the private data pack under `data/raw/` and pipeline outputs under `SupeRR_Selector_Research/outputs/`, so they will not run from this repository alone. `run_pipeline.py` is the original runner and also expects a `tests/` folder that is not published.
+
+The dashboard embeds aggregated per-player statistics only, not the raw ball-by-ball records.
+
+With the data in place: `pip install -r requirements.txt`, run the pipeline, then `python dashboard/build_data.py` and `python dashboard/build_report.py`.
