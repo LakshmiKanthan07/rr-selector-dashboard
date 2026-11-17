@@ -98,7 +98,7 @@ tb, tw = D["topBat"][0], D["topBowl"][0]
 rb = lambda k, rows: sum(1 for r in rows if D["robust"][k][str(r["player_id"])] >= 90)
 S += [Paragraph("Summary", h2),
       Paragraph(f"We scored {M['bat_pool']} batters and {M['bowl_pool']} bowlers on {fi(M['deliveries'])} ball-by-ball deliveries from {fi(M['matches'])} IPL and T20I matches (2022 onwards). "
-                f"<b>The Round 1 rankings are pure data rankings; availability is applied separately in section 4.</b> "
+                f"<b>The Final Top 10 (below) keeps only players who are both available to RR and able to handle pressure; the pressure-only ranking is in section 3.</b> "
                 f"The most reliable under pressure are <b>{tb['player']}</b> (batters, index {f1(tb['reliability_pct'])}) and <b>{tw['player']}</b> (bowlers, index {f1(tw['reliability_pct'])}). "
                 f"We then screened {M['auction_pool']} players against Rajasthan Royals' squad gaps, the IPL 2027 retention and release lists as reported on {F['asOf']}, and RR's purse and overseas-slot limits to produce {len(picks)} recommended targets. "
                 f"The auction pool is not official until the register is published (due {F['auction']['final_register']}; auction {F['auction']['date']}, {F['auction']['venue']}), so released players are 'potentially available' rather than confirmed.", body),
@@ -106,7 +106,16 @@ S += [Paragraph("Summary", h2),
       Paragraph(f"Rankings are not equally firm: {rb('bat', D['topBat'])} of the 10 batters and {rb('bowl', D['topBowl'])} of the 10 bowlers stay in the Top 10 in at least 90% of 2,000 random re-weightings of the score, so the lower places are weight-sensitive.", body),
       Spacer(1, 6), chart()]
 
-S += [Paragraph("1. Methodology", h2),
+ecol0 = [8 * mm, 40 * mm, 22 * mm, 14 * mm, 22 * mm, 16 * mm, 14 * mm]
+def frow(r): return [r["shortlist_rank"], r["player"] + (" (OS)" if r["overseas"] == 1 else ""), r["team_2026"] or "reg.", f1(r["pri_pct"]), f1(r["pri_percentile"]) + "%", "#" + str(r["original_pri_rank"]), r["status"]]
+S += [Paragraph("Final Top 10: available AND able to handle pressure", h2),
+      Paragraph(f"A player is on this list only if he passes <b>both</b> tests: (1) he is available to Rajasthan Royals (released by his franchise on the {F['asOf']} lists, so not retained, traded, already at RR, retired, ineligible or unverified), and (2) he can handle pressure (Pressure Reliability Index in the top {100 - F['gate']}% of all scored players, and not a low sample). "
+                "Available players who fail the pressure test, and pressure-proof players who are not available (for example Bumrah, retained by MI), are never selected. OS = overseas; RR can add at most 3 overseas players. Status B = released but not yet in an official auction pool.", body),
+      Paragraph("Batters", h3), tbl([["#", "Batter", "Released by", "PRI", "Pressure pctile", "PRI rank", "Status"]] + [frow(r) for r in F["eligBat"]], ecol0),
+      Paragraph("Bowlers", h3), tbl([["#", "Bowler", "Released by", "PRI", "Pressure pctile", "PRI rank", "Status"]] + [frow(r) for r in F["eligBowl"]], ecol0),
+      Spacer(1, 3), Paragraph("Sections 3 and 4 show the pressure-only ranking and how availability was applied. Availability comes from press-reported lists (an official list could not be reached); the Bangladeshi players are only reported as registered.", small)]
+
+S += [PageBreak(), Paragraph("1. Methodology", h2),
       Paragraph("<b>Defining pressure.</b> Every delivery gets a pressure index from 0 to 1, built from the factors in the brief:", body)]
 for t in ["<b>Required run rate (40%)</b>: 14 or more scores 1.0, 10 or more 0.7, 7 or more 0.4, otherwise 0.1 (chases).",
           "<b>Wickets remaining (25%)</b>: 2 or fewer scores 1.0, 4 or fewer 0.7, 6 or fewer 0.4, otherwise 0.1.",
@@ -202,8 +211,8 @@ S += [PageBreak(), Paragraph("2. Formulas and calculation details", h2),
           "CAFS = 0.40 PRI + 0.30 CPAS + 0.20 SGF + 0.10 VF"]),
       Paragraph("A 'realistic target' is a player with status A or B (released by a franchise, so not retained, traded, already at RR, withdrawn or unverified) who also passes RR's purse and overseas-slot check.", small)]
 
-S += [PageBreak(), Paragraph("3. Top 10 most reliable under pressure (the Round 1 submission)", h2),
-      Paragraph("<b>These are the Round 1 rankings.</b> They come only from the supplied ball-by-ball data: no reputation, retention or availability is applied, so retained or traded players such as Bumrah stay in. Which of these players Rajasthan Royals can actually acquire is a separate step in section 4.", body), Paragraph("Batters", h3)]
+S += [PageBreak(), Paragraph("3. Top 10 most reliable under pressure (pressure-only ranking)", h2),
+      Paragraph("<b>This is the pressure-only ranking, before availability.</b> It comes only from the supplied ball-by-ball data, so retained or traded players such as Bumrah appear here but cannot be bought. The Final Top 10 at the start of this report applies availability on top of this ranking; section 4 shows how.", body), Paragraph("Batters", h3)]
 rows = [["#", "Batter", "Inn", "Runs", "SR", "Press. SR", "Press. inn", "Sample", "PRI", "Top-10 %"]]
 for r in D["topBat"]:
     rows.append([r["rank"], r["player"], r["innings"], fi(r["total_runs"]), f1(r["strike_rate"]), f1(r["pressure_sr"]), r["pressure_innings"], r["sample_reliability"], f1(r["reliability_pct"]), f"{D['robust']['bat'][str(r['player_id'])]:.0f}%"])
@@ -220,7 +229,7 @@ S.append(Paragraph("Read the pressure columns with care: several batters have fe
 
 S += [PageBreak(), Paragraph("4. Acquisition feasibility (status as of " + F["asOf"] + ")", h2),
       Paragraph("The Top 10 above is the pure pressure ranking. To judge whether Rajasthan Royals can realistically acquire these players, every ranked player was walked in PRI order and given one status. "
-                "A player stays on the acquisition shortlist only if status is A or B and RR's purse / overseas-slot check passes. Statuses C to G are skipped and the next-ranked player is considered, until 10 qualify.", body)]
+                "A player stays on the acquisition shortlist only if status is A or B, his pressure percentile clears the threshold, and RR's purse / overseas-slot check passes. Statuses C to G are skipped and the next-ranked player is considered, until 10 qualify.", body)]
 S.append(tbl([["Status", "Meaning"]] + [[k, v] for k, v in STAT.items()], [16 * mm, 158 * mm]))
 S += [Spacer(1, 4), Paragraph("Evidence base: the IPL 2027 retention and release lists as reported on " + F["asOf"] + " (the deadline day), cross-checked between two press compilations. An official iplt20.com or BCCI page could not be reached, so these are press-reported lists, not an official download. "
       "No official auction pool exists yet, so no player is status A; released players are B. The old Low / Medium / High release tiers are gone because retention is now known. Pakistani players are marked D because none has been selected in the IPL since 2008 (a long-standing practice; no written rule was found).", small)]

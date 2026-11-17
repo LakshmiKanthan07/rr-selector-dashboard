@@ -130,7 +130,7 @@ print("nationality relabelled (T20I team evidence):", int((_old != targets.natio
 val = pd.read_csv(FINAL / "model_validation_report.csv")
 FEAS = RES / "outputs" / "feasibility"
 from ipl2027_lists import AS_OF, AUCTION, TEAMS, LAST_PRICE_CR, NOTES as SRC_NOTES
-from feasibility_filter import RR_CONTEXT, PURSE_TOLERANCE
+from feasibility_filter import RR_CONTEXT, PURSE_TOLERANCE, PRESSURE_GATE_PCTILE
 feas_log = pd.read_csv(FEAS / "filter_decision_log.csv")
 
 # ---- picks: highest-CAFS realistic targets per gap, then the MANDATORY RR purse / overseas-slot portfolio check ----
@@ -162,11 +162,11 @@ constraint = dict(RR_CONTEXT, purse_tolerance=PURSE_TOLERANCE, picks_overseas=ov
                   priced_picks=sum(1 for p in picks if p["price_cr"] is not None), fails=fails)
 print("RR constraint: picks", len(picks), "| overseas", ov_used, "of", RR_CONTEXT["free_overseas_slots"], "free | feasibility fails:", [f["player"] for f in fails])
 
-_ecols = ["shortlist_rank", "original_pri_rank", "player", "pri_pct", "team_2026", "overseas", "status", "release_tier", "last_price_cr", "evidence"]
+_ecols = ["shortlist_rank", "original_pri_rank", "player", "pri_pct", "pri_percentile", "sample_reliability", "team_2026", "overseas", "status", "release_tier", "last_price_cr", "evidence"]
 _el_b = pd.read_csv(FEAS / "Eligible_Top10_Batters.csv")[_ecols]
 _el_w = pd.read_csv(FEAS / "Eligible_Top10_Bowlers.csv")[_ecols]
 feas = {
-    "asOf": AS_OF,
+    "asOf": AS_OF, "gate": PRESSURE_GATE_PCTILE,
     "auction": AUCTION,
     "eligBat": recs(_el_b), "eligBowl": recs(_el_w),
     "eligOverseas": {"bat": int(_el_b.overseas.sum()), "bowl": int(_el_w.overseas.sum())},

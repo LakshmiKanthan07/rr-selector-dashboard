@@ -11,7 +11,26 @@ Round 1: Identify the Most Reliable Players Under Pressure
 
 We scored **311 batters and 249 bowlers** on **194,014 ball-by-ball deliveries** from 883 IPL and T20I matches (2022 onwards) and ranked them by a **Pressure Reliability Index (PRI)**: a 0-100 score that rewards players who stay effective, and consistent, in high-pressure match situations. We then screened 560 player profiles against Rajasthan Royals' squad gaps and the IPL 2027 retention/release lists of 17 Nov 2026 to produce **4 recommended auction targets**. The Top 10 tables below are the pure Round 1 data ranking: retention and availability are applied separately.
 
-### Top 10 most reliable batters under pressure
+### Final Top 10: available AND able to handle pressure (status 17 Nov 2026)
+A player is selected only if he is available to RR (released by his franchise, status B: the official auction pool is not published until 3 Dec 2026) **and** his Pressure Reliability Index is in the top 40% of the pool. Retained players such as Bumrah fail the availability test.
+
+| # | Batter | Bowler |
+|---|---|---|
+| 1 | Pathum Nissanka | Matheesha Pathirana |
+| 2 | Towhid Hridoy | Mustafizur Rahman |
+| 3 | Jacob Bethell | Wanindu Hasaranga |
+| 4 | George Linde | Trent Boult |
+| 5 | Nitish Rana | Taskin Ahmed |
+| 6 | Shimron Hetmyer | Avesh Khan |
+| 7 | Mahipal Lomror | Mitchell Starc |
+| 8 | Rahul Tripathi | Blessing Muzarabani |
+| 9 | Matthew Short | Tushar Deshpande |
+| 10 | Nehal Wadhera | Hasan Mahmud |
+
+Caveats: availability is press-reported; Bangladeshi players are only reported as registered; Starc's "opted out" status is unclear; RR can add at most 3 overseas players.
+
+### Pressure-only ranking (before availability)
+Top 10 most reliable batters and bowlers under pressure:
 
 | # | Batter | PRI | | # | Bowler | PRI |
 |---|---|---|---|---|---|---|

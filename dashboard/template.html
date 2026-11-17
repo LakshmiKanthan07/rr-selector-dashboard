@@ -100,6 +100,10 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 
 <section id="picks">
 <div class="sh"><span class="bd">RECOMMENDATION</span><h2>Recommended Targets</h2></div>
+<div class="panel" style="border-left:4px solid #EA1A85"><h3>Final Top 10: available AND able to handle pressure</h3>
+<p class="lead" id="finLead"></p>
+<div class="g2"><div class="tw"><table id="finBat"></table></div><div class="tw"><table id="finBowl"></table></div></div>
+<div class="note">A player makes this list only if he passes <b>both</b> tests: (1) available to RR (released by his franchise, so not retained, traded, already at RR, retired, ineligible or unverified) and (2) able to handle pressure (Pressure Reliability Index in the top 40% of all scored players, and not a low sample). Available players who fail the pressure test, and pressure-proof players who are not available (for example Bumrah, retained by MI), are never selected.</div></div>
 <div id="execSummary"></div>
 <p class="lead">Picks are the highest-CAFS <i>realistic</i> targets (CAFS 70 or above) for each squad gap, then pass through RR's purse and overseas-slot check. Each card shows the evidence behind the pick and the risks to price in. Players dropped by that check are listed below the cards.</p>
 <div class="toolbar"><div class="seg" role="group" aria-label="Picks filter"><button aria-pressed="true" data-pk="all">All picks</button><button aria-pressed="false" data-pk="Batter">Batters</button><button aria-pressed="false" data-pk="Bowler">Bowlers</button></div><span class="lead" style="margin:0" id="pkHint"></span></div>
@@ -110,7 +114,7 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 
 <section id="r1">
 <div class="sh"><span class="bd">ROUND 1</span><h2>Official Top 10 Under Pressure</h2></div>
-<div class="note" style="border-left:4px solid var(--gold,#EA1A85);margin-bottom:10px"><b>This is the Round 1 submission.</b> It is the pure data ranking of who is most reliable under pressure, from the supplied ball-by-ball data, with no reputation, retention or availability applied. Retained and traded players such as Bumrah stay here because the ranking is about performance. Who RR can actually buy is a separate step: see <a href="#feas">Feasibility</a> below.</div>
+<div class="note" style="border-left:4px solid var(--gold,#EA1A85);margin-bottom:10px"><b>This is the pressure-only ranking, before availability.</b> It shows who is most reliable under pressure on the data alone. Retained or traded players such as Bumrah appear here but cannot be bought, so they are not in the Final Top 10 above. See <a href="#feas">Feasibility</a> for how availability is applied.</div>
 <p class="lead">Ranked by the Pressure Reliability Index (PRI): a 0–100 score blending quality, consistency, performance <i>under pressure</i> and consistency under pressure, shrunk toward the population mean for small samples. Click any row to see the evidence behind the rank.</p>
 <div class="toolbar"><div class="seg" role="group" aria-label="Role"><button aria-pressed="true" data-role="bat">Batters</button><button aria-pressed="false" data-role="bowl">Bowlers</button></div>
 <span class="lead" style="margin:0" id="r1hint"></span></div>
@@ -122,13 +126,13 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 
 <section id="feas">
 <div class="sh"><span class="bd">FEASIBILITY</span><h2>Can RR Actually Acquire Them?</h2></div>
-<div class="note" style="border-left:4px solid var(--gold,#EA1A85);margin-bottom:10px"><b>This is a second layer, not the Round 1 ranking.</b> It takes the same PRI ranking and removes players RR cannot get (retained, traded, already at RR, retired, ineligible or unverified), to show the best <i>available</i> names for the IPL 2027 auction.</div>
+<div class="note" style="border-left:4px solid var(--gold,#EA1A85);margin-bottom:10px"><b>How the Final Top 10 is built.</b> Walk the pressure ranking from rank 1; skip anyone RR cannot get (retained, traded, already at RR, retired, ineligible or unverified) and anyone below the pressure threshold; stop at 10.</div>
 <p class="lead" id="feasLead"></p>
 <div class="panel"><h3>Status legend</h3><div id="feasLegend" style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.85rem"></div>
-<div class="note">Sequential rule: walk the original PRI ranking from rank 1, keep a player only if status is A or B, skip C, D, E, F and G, stop at 10. Players who clearly fail RR's purse or overseas-slot check are skipped as well. Release tiers (Low / Medium / High) no longer exist: retention is now a fact.</div></div>
+<div class="note">Sequential rule: walk the original PRI ranking from rank 1, keep a player only if status is A or B and his PRI percentile is at least the pressure threshold, skip C, D, E, F and G, stop at 10. Players who clearly fail RR's purse or overseas-slot check are skipped as well. Release tiers (Low / Medium / High) no longer exist: retention is now a fact.</div></div>
 <div class="g2">
-<div class="panel"><h3>Eligible Top 10 batters (after filter)</h3><div class="tw"><table id="feBat"></table></div></div>
-<div class="panel"><h3>Eligible Top 10 bowlers (after filter)</h3><div class="tw"><table id="feBowl"></table></div></div>
+<div class="panel"><h3>Final Top 10 batters (available and pressure-capable)</h3><div class="tw"><table id="feBat"></table></div></div>
+<div class="panel"><h3>Final Top 10 bowlers (available and pressure-capable)</h3><div class="tw"><table id="feBowl"></table></div></div>
 </div>
 <div class="panel"><h3>Players excluded while walking the ranking</h3><div class="tw"><table id="feEx"></table></div></div>
 <div class="panel"><h3>Acquisition priority board (PRI x availability x overseas-slot factor)</h3>
@@ -456,6 +460,9 @@ table($('#valTable'),[{h:'Test',f:r=>esc(r.test_category)},{h:'Subject',f:r=>esc
  $('#feasLegend').innerHTML=Object.entries(STAT).map(([k,v])=>`<span>${stPill(k,'')} ${esc(v)}</span>`).join('');
  const el=[{h:'#',f:r=>r.shortlist_rank,num:1},{h:'PRI rank',f:r=>r.original_pri_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b>`},{h:'2026 team',f:r=>esc(r.team_2026)},{h:'Status',f:r=>stPill(r.status,r.release_tier)},{h:'PRI',f:r=>f1(r.pri_pct),num:1}];
  table($('#feBat'),el,F.eligBat);table($('#feBowl'),el,F.eligBowl);
+ const fc=[{h:'#',f:r=>r.shortlist_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b> ${r.overseas===1?natPill('Overseas'):natPill('Indian')}`},{h:'Released by',f:r=>esc(r.team_2026||'reported registered')},{h:'PRI',f:r=>f1(r.pri_pct),num:1},{h:'Pressure percentile',f:r=>f1(r.pri_percentile)+'%',num:1},{h:'PRI rank',f:r=>'#'+r.original_pri_rank,num:1},{h:'Status',f:r=>stPill(r.status,'')}];
+ table($('#finBat'),fc,F.eligBat);table($('#finBowl'),fc,F.eligBowl);
+ $('#finLead').textContent=`Status as of ${F.asOf}. Every name is available (status B: released, not yet in an official auction pool) and sits in the top ${100-F.gate}% of its pool for pressure reliability. RR can add at most ${F.constraint.free_overseas_slots} overseas players, so not all can be bought.`;
  table($('#feEx'),[{h:'List',f:r=>esc(r.list)},{h:'PRI rank',f:r=>r.original_pri_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b>`},{h:'Status',f:r=>stPill(r.status,'')},{h:'Reason',f:r=>esc(r.reason)},{h:'Evidence',f:r=>esc(r.evidence)}],F.excluded);
  const bc=[{h:'#',f:r=>r.acq_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b> <small style="color:var(--muted)">PRI #${r.original_pri_rank}</small>`},{h:'Team',f:r=>esc(r.team_2026)},{h:'Status',f:r=>stPill(r.status,r.release_tier)},{h:'Score',f:r=>f1(r.afs),num:1}];
  table($('#fbBat'),bc,F.board.filter(r=>r.list==='Batters'));table($('#fbBowl'),bc,F.board.filter(r=>r.list==='Bowlers'));

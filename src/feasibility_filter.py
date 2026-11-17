@@ -163,6 +163,7 @@ RR_CONTEXT = dict(
 AVAIL = {"A": 1.0, "B": 0.8}   # A = in the official auction pool (none yet); B = released, pool not yet official (judgement weight)
 MAX_BOARD_RANK = 60      # only players inside the original PRI top-60 enter the priority board
 OVERSEAS_FACTOR = 0.85   # RR can add at most 3 overseas players
+PRESSURE_GATE_PCTILE = 60  # "able to handle pressure": PRI in the top 40% of its pool (and sample not Low). Players below are never selected, however available.
 PURSE_TOLERANCE = 1.10   # a price "clearly exceeds" the purse only when more than 10% over (last prices are not 2027 forecasts)
 
 MANDATORY_FAIL = {"C": "Retained / contracted by another franchise (IPL 2027 lists)",
@@ -184,9 +185,14 @@ def rr_check(player, overseas, price_cr=None):
 
 
 def run(df_rank, name_col, rank_col, pri_col, master, label, n=10):
+    """Final list = available (status A/B) AND able to handle pressure (PRI percentile gate) AND passes the RR check.
+    A player failing either the availability test or the pressure test is never selected."""
     m = master.drop_duplicates("player_name").set_index("player_name")
     log, shortlist = [], []
+    pool_n = len(df_rank)
     for _, r in df_rank.sort_values(pri_col, ascending=False).iterrows():
+        pctile = round((1 - (int(r[rank_col]) - 1) / pool_n) * 100, 1)
+        samp = r.get("sample_reliability", "")
         nm = r[name_col]
         st = m.loc[nm] if nm in m.index else None
         status = st["status"] if st is not None else "G"
@@ -196,14 +202,16 @@ def run(df_rank, name_col, rank_col, pri_col, master, label, n=10):
         team = st["team_2026"] if st is not None else ""
         if status in MANDATORY_FAIL:
             decision, reason = "EXCLUDED", MANDATORY_FAIL[status]
+        elif pctile < PRESSURE_GATE_PCTILE or samp == "Low":
+            decision, reason = "EXCLUDED", f"Available but cannot be shown to handle pressure (PRI percentile {pctile} < {PRESSURE_GATE_PCTILE} or Low sample)"
         else:
             ok, why = rr_check(nm, over)
             if not ok:
                 decision, reason = "EXCLUDED", "RR feasibility fail: " + why
             else:
-                decision, reason = "INCLUDED", "Eligible; " + ("in official auction pool" if status == "A" else "released, auction pool not yet official")
+                decision, reason = "INCLUDED", "Available AND pressure-capable; " + ("in official auction pool" if status == "A" else "released, auction pool not yet official")
         price = L.LAST_PRICE_CR.get(nm)
-        rec = dict(list=label, original_pri_rank=int(r[rank_col]), player=nm, pri_pct=r[pri_col],
+        rec = dict(list=label, original_pri_rank=int(r[rank_col]), player=nm, pri_pct=r[pri_col], pri_percentile=pctile, sample_reliability=samp,
                    team_2026=team, overseas=over, status=status, release_tier=tier,
                    last_price_cr=price, decision=decision, reason=reason, evidence=ev)
         if decision == "INCLUDED" and len(shortlist) < n:
