@@ -79,3 +79,5 @@ The dataset and all processed data files are deliberately **not published** in t
 The dashboard embeds aggregated per-player statistics only, not the raw ball-by-ball records.
 
 With the data in place: `pip install -r requirements.txt`, run the pipeline, then `python dashboard/build_data.py` and `python dashboard/build_report.py`.
+
+_Dashboard and report last refreshed 17 Nov 2026._
