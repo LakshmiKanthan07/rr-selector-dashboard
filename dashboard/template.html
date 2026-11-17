@@ -93,7 +93,7 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 
 </div></header>
 <nav aria-label="Sections"><div class="in"><b>RR SupeRR Selector</b>
-<a href="#picks">Top Picks</a><a href="#r1">Round 1 Rankings</a><a href="#method">Pressure Method</a><a href="#sens">Stress Test</a><a href="#dna">RR DNA</a><a href="#gaps">Squad Gaps</a><a href="#auction">Auction Engine</a><a href="#valid">Validation</a></div></nav>
+<a href="#picks">Top Picks</a><a href="#r1">Round 1 Rankings</a><a href="#feas">Feasibility</a><a href="#method">Pressure Method</a><a href="#sens">Stress Test</a><a href="#dna">RR DNA</a><a href="#gaps">Squad Gaps</a><a href="#auction">Auction Engine</a><a href="#valid">Validation</a></div></nav>
 <div class="wrap">
 <div class="kpis" id="kpis"></div>
 
@@ -101,14 +101,16 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 <section id="picks">
 <div class="sh"><span class="bd">RECOMMENDATION</span><h2>Recommended Targets</h2></div>
 <div id="execSummary"></div>
-<p class="lead">Picks are the highest-CAFS <i>realistic</i> targets (CAFS 70 or above) for each squad gap, so the list fills real holes in the XI. Each card shows the evidence behind the pick and the risks to price in.</p>
+<p class="lead">Picks are the highest-CAFS <i>realistic</i> targets (CAFS 70 or above) for each squad gap, then pass through RR's purse and overseas-slot check. Each card shows the evidence behind the pick and the risks to price in. Players dropped by that check are listed below the cards.</p>
 <div class="toolbar"><div class="seg" role="group" aria-label="Picks filter"><button aria-pressed="true" data-pk="all">All picks</button><button aria-pressed="false" data-pk="Batter">Batters</button><button aria-pressed="false" data-pk="Bowler">Bowlers</button></div><span class="lead" style="margin:0" id="pkHint"></span></div>
 <div class="g2" id="pickGrid"></div>
 <div class="panel"><h3>Gap coverage matrix</h3><div class="tw"><table id="gapMatrix"></table></div></div>
+<div class="panel" id="feasFailPanel"><h3>Feasibility fail note: good fits RR cannot fit</h3><div class="tw"><table id="feasFailTable"></table></div><div class="note" id="feasFailNote"></div></div>
 </section>
 
 <section id="r1">
 <div class="sh"><span class="bd">ROUND 1</span><h2>Official Top 10 Under Pressure</h2></div>
+<div class="note" style="border-left:4px solid var(--gold,#EA1A85);margin-bottom:10px"><b>This is the Round 1 submission.</b> It is the pure data ranking of who is most reliable under pressure, from the supplied ball-by-ball data, with no reputation, retention or availability applied. Retained and traded players such as Bumrah stay here because the ranking is about performance. Who RR can actually buy is a separate step: see <a href="#feas">Feasibility</a> below.</div>
 <p class="lead">Ranked by the Pressure Reliability Index (PRI): a 0–100 score blending quality, consistency, performance <i>under pressure</i> and consistency under pressure, shrunk toward the population mean for small samples. Click any row to see the evidence behind the rank.</p>
 <div class="toolbar"><div class="seg" role="group" aria-label="Role"><button aria-pressed="true" data-role="bat">Batters</button><button aria-pressed="false" data-role="bowl">Bowlers</button></div>
 <span class="lead" style="margin:0" id="r1hint"></span></div>
@@ -116,6 +118,22 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 <div class="panel" style="padding:0;overflow:hidden;align-self:start"><div class="tw"><table id="topTable"></table></div></div>
 <div class="panel" id="detail"></div>
 </div>
+</section>
+
+<section id="feas">
+<div class="sh"><span class="bd">FEASIBILITY</span><h2>Can RR Actually Acquire Them?</h2></div>
+<div class="note" style="border-left:4px solid var(--gold,#EA1A85);margin-bottom:10px"><b>This is a second layer, not the Round 1 ranking.</b> It takes the same PRI ranking and removes players RR cannot get (retained, traded, already at RR, retired, ineligible or unverified), to show the best <i>available</i> names for the IPL 2027 auction.</div>
+<p class="lead" id="feasLead"></p>
+<div class="panel"><h3>Status legend</h3><div id="feasLegend" style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.85rem"></div>
+<div class="note">Sequential rule: walk the original PRI ranking from rank 1, keep a player only if status is A or B, skip C, D, E, F and G, stop at 10. Players who clearly fail RR's purse or overseas-slot check are skipped as well. Release tiers (Low / Medium / High) no longer exist: retention is now a fact.</div></div>
+<div class="g2">
+<div class="panel"><h3>Eligible Top 10 batters (after filter)</h3><div class="tw"><table id="feBat"></table></div></div>
+<div class="panel"><h3>Eligible Top 10 bowlers (after filter)</h3><div class="tw"><table id="feBowl"></table></div></div>
+</div>
+<div class="panel"><h3>Players excluded while walking the ranking</h3><div class="tw"><table id="feEx"></table></div></div>
+<div class="panel"><h3>Acquisition priority board (PRI x availability x overseas-slot factor)</h3>
+<div class="g2"><div class="tw"><table id="fbBat"></table></div><div class="tw"><table id="fbBowl"></table></div></div>
+<div class="note">Weights: status A (official pool) 1.0, status B (released, pool not yet official) 0.8; overseas players x0.85 because RR can add at most 3 overseas players. These are judgement values, shown so they can be challenged. Only players inside the original PRI top 60 are considered.</div></div>
 </section>
 
 <section id="method">
@@ -156,9 +174,9 @@ footer{margin-top:40px;border-top:1px solid var(--line);padding:16px 0;color:var
 </section>
 
 <section id="gaps">
-<div class="sh"><span class="bd">SQUAD</span><h2>Retained Core &amp; Gaps to Fill</h2></div>
+<div class="sh"><span class="bd">SQUAD</span><h2>RR Squad (IPL 2026) &amp; Gaps to Fill</h2></div>
 <div class="g2">
-<div class="panel"><h3>Core already in place</h3><div id="squad"></div></div>
+<div class="panel"><h3>RR squad for IPL 2027 (retention lists, 17 Nov 2026)</h3><div id="squadCtx" class="note"></div><div id="squad"></div><div class="note" id="squadRel"></div></div>
 <div class="panel"><h3>Strategic gaps</h3><div id="gapList"></div></div>
 </div>
 </section>
@@ -210,6 +228,8 @@ const tip=$('#tip');
 function showTip(e,h){tip.innerHTML=h;tip.style.display='block';tip.style.left=Math.min(e.clientX+14,innerWidth-270)+'px';tip.style.top=(e.clientY+14)+'px'}
 function hideTip(){tip.style.display='none'}
 const sampPill=s=>`<span class="pill ${s==='High'?'p-hi':s==='Low'?'p-lo':'p-med'}" title="Sample-size confidence">${esc(s)}</span>`;
+const STAT={A:'Available (in the official auction pool)',B:'Released / reported registered, auction pool not yet official',C:'Retained or traded: contracted by another franchise',D:'Ineligible',E:'Already with RR',F:'Withdrawn / retired / opted out',G:'Status unverified (no reliable information)'};
+const stPill=(s,t)=>`<span class="pill ${s==='A'?'p-hi':s==='B'?'p-med':'p-lo'}" title="${esc(STAT[s]||'')}">${s}</span>`;
 const natPill=n=>`<span class="pill ${n==='Indian'?'p-ind':'p-ovs'}">${esc(n)}</span>`;
 function table(el,cols,rows,sel){
   el.innerHTML='<thead><tr>'+cols.map(c=>`<th class="${c.num?'num':''}">${c.h}</th>`).join('')+'</tr></thead><tbody>'+
@@ -231,12 +251,8 @@ function pickStats(t){
 }
 const MIN_CAFS=70;
 function buildPicks(){
-  const used=new Set(),out=[];
-  const real=D.targets.filter(t=>t.realistic&&t.cafs_score>=MIN_CAFS).sort((a,b)=>b.cafs_score-a.cafs_score);
-  ['GAP-01','GAP-02','GAP-03','GAP-04','GAP-05'].forEach(g=>{
-    real.filter(t=>gapId(t.primary_gap_targeted)===g&&!used.has(t.player_id)).slice(0,g==='GAP-03'?3:g==='GAP-05'?1:2).forEach(t=>{used.add(t.player_id);out.push({...t,gap:g})});
-  });
-  return out.sort((a,b)=>b.cafs_score-a.cafs_score);
+  const byUid=Object.fromEntries(D.targets.map(t=>[t.uid,t]));
+  return D.picks.map(p=>({...byUid[p.uid],gap:p.gap,price_cr:p.price_cr}));
 }
 function pickCard(t){
   const {bat,pl,n}=pickStats(t),g=gapName[t.gap]||{};
@@ -249,13 +265,14 @@ function pickCard(t){
     if(pc<10)risks.push(`only ${pc} ${bat?'pressure innings':'pressure matches'} of evidence`);
     const rb=D.robust[bat?'bat':'bowl'][t.player_id];if(rb!=null&&rb<70)risks.push(`rank is weight-sensitive (Top 10 in only ${f1(rb)}% of re-weightings)`);
   } else ev='No pressure statistics available in the scored pool.';
-  if(t.nationality==='Overseas')risks.push('uses an overseas slot');
+  if(t.nationality==='Overseas')risks.push(`uses 1 of RR's ${D.feas.constraint.free_overseas_slots} free overseas slots`);
+  risks.push(`${t.team_2026?'released by '+t.team_2026:'reported registered'}; not yet in an official auction pool (register due 3 Dec), price not modelled${t.price_cr?'; last price Rs '+t.price_cr+' cr':''}`);
   if(t.official_pri_rank&&t.official_pri_rank>10)risks.push('not in the official Round 1 Top 10');
-  return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h4 style="font-size:1.05rem">${esc(t.player_name)} ${natPill(t.nationality)}</h4><span class="pill p-med">CAFS ${f1(t.cafs_score)}</span></div>
+  return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h4 style="font-size:1.05rem">${esc(t.player_name)} ${natPill(t.nationality)} ${stPill(t.status,t.release_tier)}</h4><span class="pill p-med">CAFS ${f1(t.cafs_score)}</span></div>
   <p class="m" style="margin-top:2px">${t.primary_role} · fills <b>${esc(t.gap)} ${esc(g.gap_name||'')}</b></p>
   <p><b>Why:</b> ${ev}</p><p><b>RR fit:</b> ${esc(g.tactical_need||'')} ${esc(t.coaching_alignment_rationale||'')}</p>
   <div class="stat"><div><b>${f1(t.pri_score)}</b><small>Pressure (PRI)</small></div><div><b>${f1(t.cpas_score)}</b><small>Coach fit</small></div><div><b>${f1(t.sgf_score)}</b><small>Gap fit</small></div></div>
-  <p style="color:${risks.length?'#b91c1c':'#15803d'}"><b>Risks:</b> ${risks.length?risks.join('; '):'none flagged by the data'}.</p></div>`;
+  <p style="color:#b91c1c"><b>Risks:</b> ${risks.length?risks.join('; '):'none flagged by the data'}.</p></div>`;
 }
 let pkFilter='all';const PICKS=buildPicks();
 function renderPicks(){
@@ -265,13 +282,14 @@ function renderPicks(){
 }
 $$('[data-pk]').forEach(b=>b.onclick=()=>{pkFilter=b.dataset.pk;$$('[data-pk]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderPicks()});
 renderPicks();
-table($('#gapMatrix'),[{h:'Gap',f:r=>`<b>${esc(r.gap_id)}</b> ${esc(r.gap_name)}`},{h:'Best realistic targets (CAFS)',f:r=>{const c=D.targets.filter(t=>t.realistic&&t.cafs_score>=MIN_CAFS&&gapId(t.primary_gap_targeted)===r.gap_id).sort((a,b)=>b.cafs_score-a.cafs_score).slice(0,3);return c.length?c.map(t=>`${esc(t.player_name)} <small style="color:var(--muted)">${f1(t.cafs_score)}</small>`).join(' · '):'<span style="color:var(--muted)">no realistic candidate above CAFS 70: widen the search or trade for one</span>'}}],D.gaps);
+table($('#gapMatrix'),[{h:'Gap',f:r=>`<b>${esc(r.gap_id)}</b> ${esc(r.gap_name)}`},{h:'Best realistic targets (CAFS)',f:r=>{const c=D.targets.filter(t=>t.realistic&&t.cafs_score>=MIN_CAFS&&gapId(t.primary_gap_targeted)===r.gap_id).sort((a,b)=>b.cafs_score-a.cafs_score).slice(0,3);return c.length?c.map(t=>`${esc(t.player_name)} <small style="color:var(--muted)">${f1(t.cafs_score)}</small>`).join(' · '):'<span style="color:var(--muted)">no realistic candidate above CAFS 70 that passes the RR purse and overseas check: widen the search or trade for one</span>'}}],D.gaps);
 {const tb=D.topBat[0],tw=D.topBowl[0],rbB=D.topBat.filter(r=>D.robust.bat[r.player_id]>=90).length,rbW=D.topBowl.filter(r=>D.robust.bowl[r.player_id]>=90).length,ov=PICKS.filter(t=>t.nationality==='Overseas').length;
  $('#execSummary').innerHTML=`<div class="panel"><h3>Executive summary</h3><ul style="padding-left:18px;font-size:.9rem;color:#374151;display:grid;gap:6px">
  <li><b>Most reliable under pressure:</b> ${esc(tb.player)} (batters, PRI ${f1(tb.reliability_pct)}) and ${esc(tw.player)} (bowlers, PRI ${f1(tw.reliability_pct)}), from ${fi(M.deliveries)} deliveries.</li>
  <li><b>Robust ranks:</b> ${rbB}/10 batters and ${rbW}/10 bowlers stay in the Top 10 in at least 90% of 2,000 random re-weightings; the rest are weight-sensitive.</li>
  <li><b>RR's need:</b> the 2025–26 team bats faster but concedes ${f2(D.season[4].bowling_economy)} an over, so two of the five squad gaps (death-overs pace and wicket-taking spin) target bowling, and the rest target the top and middle order.</li>
- <li><b>Shortlist:</b> ${PICKS.length} gap-matched targets, ${ov} overseas, so plan overseas slots around the ${D.squad.filter(s=>s.nationality==='Overseas').length} already in the core.</li>
+ <li><b>Shortlist:</b> ${PICKS.length} gap-matched targets, ${ov} overseas, and RR already has ${D.squad.filter(s=>s.nationality==='Overseas').length} overseas players (cap 8), leaving ${D.feas.constraint.free_overseas_slots} free slots and Rs ${D.feas.constraint.purse_cr} cr of purse.</li>
+ <li><b>Availability:</b> status as of ${esc(D.feas.asOf)} (retention deadline day). No player is officially in the auction pool yet (register due 3 Dec, auction 16 Dec in Goa), so released players are status B, and every retained or traded player is excluded.</li>
  <li><b>Caveat:</b> coach-fit scores overlap heavily with PRI (r≈0.9), so the shortlist is mainly a pressure-reliability ranking filtered by squad need.</li></ul></div>`}
 
 /* ---------- ROUND 1 ---------- */
@@ -359,7 +377,9 @@ table($('#rrBat'),[{h:'Batter',f:r=>`<b>${esc(r.player_name)}</b>`},{h:'Runs',nu
 table($('#rrBowl'),[{h:'Bowler',f:r=>`<b>${esc(r.player_name)}</b>`},{h:'Wkts',num:1,f:r=>r.wickets},{h:'Econ',num:1,f:r=>f2(r.economy)},{h:'Avg',num:1,f:r=>f1(r.bowling_average)},{h:'Dot%',num:1,f:r=>f1(r.dot_pct)},{h:'Archetype',f:r=>esc(r.tactical_archetype)}],D.rrBowl);
 
 /* ---------- SQUAD ---------- */
-$('#squad').innerHTML=D.squad.map(s=>`<div class="card" style="border-top-color:var(--gold)"><h4>${esc(s.player_name)} <small style="color:var(--muted)">${esc(s.role)}</small> ${natPill(s.nationality)}</h4><p class="m">${esc(s.phase_specialty)} · ${esc(s.primary_strength)}</p></div>`).join('');
+$('#squad').innerHTML=D.squad.map(s=>`<div class="card" style="border-top-color:var(--gold)"><h4>${esc(s.player_name)} <small style="color:var(--muted)">${esc(s.role)}</small> ${natPill(s.nationality)}</h4><p class="m">${esc(s.retention_outlook||'')}</p></div>`).join('');
+{const c=D.feas.constraint;$('#squadCtx').textContent=`Squad ${D.squad.length}/25 · purse Rs ${c.purse_cr} cr · ${c.open_slots} open slots · ${D.squad.filter(s=>s.nationality==='Overseas').length} overseas of 8 (${c.free_overseas_slots} free). Source: IPL 2027 lists as reported on 17 Nov 2026; an official iplt20.com page could not be reached.`;
+ $('#squadRel').innerHTML='<b>Released / traded out:</b> '+D.feas.rrReleased.map(r=>esc(r.player_name)+(r.action==='Released'?'':' ('+esc(r.action.toLowerCase())+')')).join(', ')+'.'}
 $('#gapList').innerHTML=D.gaps.map(g=>`<div class="card"><h4>${esc(g.gap_id)} · ${esc(g.gap_name)}</h4><p>${esc(g.tactical_need)}</p><p class="m">Target: ${esc(g.target_metrics)}</p></div>`).join('');
 
 /* ---------- AUCTION ---------- */
@@ -428,7 +448,26 @@ table($('#valTable'),[{h:'Test',f:r=>esc(r.test_category)},{h:'Subject',f:r=>esc
  <div class="note">The 95% intervals shown in the Round 1 profiles are bootstrap intervals on <i>mean runs per innings</i> or <i>mean economy per match</i>, not on the PRI score. The weight stress test is the evidence for ranking stability.</div>
  <div class="note">Players with few pressure innings rank on thin evidence. High/Extreme-pressure balls are only ~${hp.toFixed(0)}% of all balls and cluster in the death overs.</div>
  <div class="note">The source scoring file tags every bowler to the pace gap. Here, bowlers are assigned by bowling type (pace to GAP-03, spin to GAP-04); CAFS values are unchanged.</div>
- <div class="note">Auction availability, prices and retention status are not in the data pack. "Realistic targets" is a model filter, not a market fact.</div>`}
+ <div class="note">Availability comes from the IPL 2027 retention/release lists as reported on ${esc(D.feas.asOf)} (an official iplt20.com page could not be reached), not the data pack. Status B means released but not yet in an official auction pool. Auction prices are not modelled: the RR purse check uses each player's last disclosed price only.</div>`}
+
+/* ---------- FEASIBILITY ---------- */
+{const F=D.feas;
+ $('#feasLead').textContent=`Status as of ${F.asOf}, the retention-deadline day. The lists are as reported by the press (an official IPL page could not be reached); the auction is on ${F.auction.date} in ${F.auction.venue}, registration closes ${F.auction.registration_close} and the final register is due ${F.auction.final_register}. Until then nobody can be status A, so released players are B.`;
+ $('#feasLegend').innerHTML=Object.entries(STAT).map(([k,v])=>`<span>${stPill(k,'')} ${esc(v)}</span>`).join('');
+ const el=[{h:'#',f:r=>r.shortlist_rank,num:1},{h:'PRI rank',f:r=>r.original_pri_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b>`},{h:'2026 team',f:r=>esc(r.team_2026)},{h:'Status',f:r=>stPill(r.status,r.release_tier)},{h:'PRI',f:r=>f1(r.pri_pct),num:1}];
+ table($('#feBat'),el,F.eligBat);table($('#feBowl'),el,F.eligBowl);
+ table($('#feEx'),[{h:'List',f:r=>esc(r.list)},{h:'PRI rank',f:r=>r.original_pri_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b>`},{h:'Status',f:r=>stPill(r.status,'')},{h:'Reason',f:r=>esc(r.reason)},{h:'Evidence',f:r=>esc(r.evidence)}],F.excluded);
+ const bc=[{h:'#',f:r=>r.acq_rank,num:1},{h:'Player',f:r=>`<b>${esc(r.player)}</b> <small style="color:var(--muted)">PRI #${r.original_pri_rank}</small>`},{h:'Team',f:r=>esc(r.team_2026)},{h:'Status',f:r=>stPill(r.status,r.release_tier)},{h:'Score',f:r=>f1(r.afs),num:1}];
+ table($('#fbBat'),bc,F.board.filter(r=>r.list==='Batters'));table($('#fbBowl'),bc,F.board.filter(r=>r.list==='Bowlers'));
+ const C=F.constraint;
+ const byUid=Object.fromEntries(D.targets.map(t=>[t.uid,t]));
+ const failRows=[...C.fails.map(f=>({player:f.player,gap:f.gap,cafs:f.cafs,reason:f.reason})),
+   ...D.targets.filter(t=>!t.rr_feasible&&['A','B'].includes(t.status)).map(t=>({player:t.player_name,gap:'',cafs:t.cafs_score,reason:t.rr_fail_reason}))];
+ table($('#feasFailTable'),[{h:'Player',f:r=>`<b>${esc(r.player)}</b>`},{h:'Gap',f:r=>esc(r.gap)},{h:'CAFS',f:r=>f1(r.cafs),num:1},{h:'Why it fails RR feasibility',f:r=>esc(r.reason)}],failRows);
+ $('#feasFailNote').textContent=`RR has Rs ${C.purse_cr} cr, ${C.open_slots} open squad slots and ${C.free_overseas_slots} free overseas slots (${8-C.free_overseas_slots} of 8 used). Check: a pick fails if it needs an overseas slot RR cannot free, or if last disclosed prices clearly exceed the purse (more than ${Math.round((C.purse_tolerance-1)*100)}% over). Last prices are not 2027 forecasts and most released players have no disclosed price here, so the purse test is weak; the overseas-slot test is the binding one. The ${D.picks.length} picks use ${C.picks_overseas} of ${C.free_overseas_slots} overseas slots.`;
+ const ob=F.eligOverseas;
+ $('#feasLead').textContent+=` RR can add at most ${C.free_overseas_slots} overseas players, yet ${ob.bat} of the eligible Top-10 batters and ${ob.bowl} of the eligible Top-10 bowlers are overseas, so the lists cannot all be bought.`;
+}
 
 /* nav highlight */
 const links=$$('nav a');

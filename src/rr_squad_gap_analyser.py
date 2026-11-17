@@ -31,33 +31,85 @@ def run_squad_gap_analysis():
     print("RUNNING RR SQUAD GAP ANALYSIS & ROSTER ECONOMICS")
     print("=" * 70)
 
-    # 1. Define Current Squad Core (Retained Foundation & Incumbents)
-    current_squad_data = [
-        {"player_name": "Sanju Samson", "role": "Wicketkeeper-Batter / Captain", "nationality": "Indian", "status": "Retained Core", "phase_specialty": "Middle Overs (1-3)", "primary_strength": "High-intent spin attacker & franchise anchor"},
-        {"player_name": "Yashasvi Jaiswal", "role": "Opening Batter", "nationality": "Indian", "status": "Retained Core", "phase_specialty": "Powerplay (1-6)", "primary_strength": "Dominant pace demolition & powerplay boundary scoring"},
-        {"player_name": "Riyan Parag", "role": "Middle-Order Batter / Off-Spin", "nationality": "Indian", "status": "Retained Core", "phase_specialty": "Middle-to-Death (4-5)", "primary_strength": "Boundary acceleration & bowling utility"},
-        {"player_name": "Dhruv Jurel", "role": "Wicketkeeper-Finisher", "nationality": "Indian", "status": "Retained Core", "phase_specialty": "Death Overs (5-7)", "primary_strength": "Situational composure & ice-cold death finishing"},
-        {"player_name": "Shimron Hetmyer", "role": "Middle-Order Finisher", "nationality": "Overseas", "status": "Retained / Core Target", "phase_specialty": "Death Overs (5-6)", "primary_strength": "Explosive boundary conversion vs pace and spin at death"},
-        {"player_name": "Sandeep Sharma", "role": "Seam Bowler", "nationality": "Indian", "status": "Retained Core", "phase_specialty": "Death & Powerplay", "primary_strength": "Knuckle balls, wide yorkers & defensive discipline under pressure"}
-    ]
+    # 1. RR squad for IPL 2027 from the 17 Nov 2026 retention lists (src/ipl2027_lists.py).
+    # Source: IPL 2027 lists as published by press on deadline day (owner-supplied, cross-checked with Cricket News/Yahoo
+    # 17 Nov 2026). An official iplt20.com page could not be reached, so "retention_outlook" says "per 17 Nov lists".
+    # Roles are general cricket knowledge, not from the data pack.
+    from ipl2027_lists import TEAMS, TRADES, AS_OF
+    rr = TEAMS["RR"]
+    role = {
+        "Riyan Parag": ("Middle-Order Batter / Off-Spin (Captain)", "Indian", "Middle"),
+        "Yashasvi Jaiswal": ("Opening Batter", "Indian", "Top"),
+        "Vaibhav Sooryavanshi": ("Opening Batter", "Indian", "Top"),
+        "Lhuan-dre Pretorius": ("Wicketkeeper-Batter", "Overseas", "Top"),
+        "Dhruv Jurel": ("Wicketkeeper-Batter", "Indian", "Middle"),
+        "Donovan Ferreira": ("Batter / Wicketkeeper", "Overseas", "Middle"),
+        "Shubham Dubey": ("Finisher", "Indian", "Middle"),
+        "Aman Rao Parela": ("Batter", "Indian", "Middle"),
+        "Ravindra Jadeja": ("All-Rounder (Spin)", "Indian", "AR"),
+        "Dasun Shanaka": ("All-Rounder (Pace)", "Overseas", "AR"),
+        "Jofra Archer": ("Fast Bowler", "Overseas", "Pace"),
+        "Nandre Burger": ("Fast Bowler", "Overseas", "Pace"),
+        "Sandeep Sharma": ("Seam Bowler", "Indian", "Pace"),
+        "Sushant Mishra": ("Seam Bowler", "Indian", "Pace"),
+        "Yash Raj Punja": ("Seam Bowler", "Indian", "Pace"),
+        "Mohammed Shami": ("Fast Bowler", "Indian", "Pace"),
+        "Ravi Bishnoi": ("Leg-Spinner", "Indian", "Spin"),
+        "Brijesh Sharma": ("Spinner", "Indian", "Spin"),
+        "M Siddharth": ("Left-Arm Spinner", "Indian", "Spin"),
+    }
+    trade_from = {t[0]: t[1] for t in TRADES if t[2] == "RR"}
+    sq = []
+    for n in rr["retained"] + rr["traded_in"]:
+        r, nat, d = role[n]
+        if n in trade_from:
+            out = f"Traded in from {trade_from[n]} (completed trade; {AS_OF} lists)"
+        elif n == "Ravindra Jadeja":
+            out = f"Retained per {AS_OF} lists (Cricket News/Yahoo describes him as traded in from CSK; either way on RR)"
+        else:
+            out = f"Retained per {AS_OF} lists"
+        sq.append((n, r, nat, d, out))
+    assert len(sq) == len(role), "role map and RR list out of step"
+    current_squad_data = [{"player_name": n, "role": r, "nationality": nat, "department": d,
+                           "status": "On RR squad (IPL 2027, " + AS_OF + ")", "retention_outlook": o,
+                           "phase_specialty": "", "primary_strength": ""} for n, r, nat, d, o in sq]
     df_current_squad = pd.DataFrame(current_squad_data)
+    n_over = int((df_current_squad.nationality == "Overseas").sum())
+    assert n_over == 8 - rr["overseas_free"], "overseas count disagrees with the lists' free-slot figure"
 
-    # 2. Define Squad Composition Targets (IPL 25-player roster archetype)
+    # released list + trade-outs (RR facts)
+    released_rows = [{"player_name": n, "team": "RR", "action": "Released", "source": f"IPL 2027 lists {AS_OF}"} for n in rr["released"]]
+    released_rows += [{"player_name": t[0], "team": "RR", "action": f"Traded out to {t[2]}", "source": f"completed trade, {AS_OF} lists"} for t in TRADES if t[1] == "RR"]
+    df_released = pd.DataFrame(released_rows)
+    df_rr_ctx = pd.DataFrame([dict(as_of=AS_OF, purse_remaining_cr=rr["purse"], open_squad_slots=rr["open_slots"],
+                                   squad_size=len(df_current_squad), overseas_in_squad=n_over,
+                                   overseas_cap=8, overseas_slots_free=rr["overseas_free"],
+                                   source=f"IPL 2027 lists {AS_OF} (press-compiled) + Cricket News/Yahoo purse/slot table")])
+
+    # 2. Squad composition vs the 25-player roster archetype. Gap level is a rule on the numbers:
+    #    shortfall >= 2 -> HIGH, shortfall 1 -> MEDIUM, no shortfall -> LOW (quality upgrade only).
+    cnt = df_current_squad.department.value_counts().to_dict()
+    def lvl(dept, target):
+        short = target - cnt.get(dept, 0)
+        return "HIGH" if short >= 2 else "MEDIUM" if short == 1 else "LOW"
     squad_comp_data = [
-        {"department": "Top-Order Batting", "current_count": 2, "target_count": 4, "gap_level": "HIGH", "priority": "Priority 1: Explosive Opening Partner for Jaiswal"},
-        {"department": "Middle-Order & Finishers", "current_count": 3, "target_count": 6, "gap_level": "MEDIUM", "priority": "Priority 2: High-composure spin counter & finishing depth"},
-        {"department": "All-Rounders (Pace/Spin)", "current_count": 1, "target_count": 4, "gap_level": "HIGH", "priority": "Priority 5: Multi-dimensional all-round balance"},
-        {"department": "Pace Battery (Powerplay/Death)", "current_count": 1, "target_count": 6, "gap_level": "CRITICAL", "priority": "Priority 3: Elite high-pace enforcer & death specialist"},
-        {"department": "Spin Department", "current_count": 0, "target_count": 5, "gap_level": "CRITICAL", "priority": "Priority 4: Leg-spin / mystery-spin wicket-taker post-Chahal"}
+        {"department": "Top-Order Batting", "current_count": cnt.get("Top", 0), "target_count": 4, "gap_level": lvl("Top", 4), "priority": "Jaiswal, Sooryavanshi and Pretorius only: one more explosive opening / keeper-batter option would complete the top order (Samson is now at CSK)"},
+        {"department": "Middle-Order & Finishers", "current_count": cnt.get("Middle", 0), "target_count": 6, "gap_level": lvl("Middle", 6), "priority": "Hetmyer (Rs 11 cr) was released, so one finisher slot is open; quality upgrade over Dubey / Aman Rao"},
+        {"department": "All-Rounders (Pace/Spin)", "current_count": cnt.get("AR", 0), "target_count": 4, "gap_level": lvl("AR", 4), "priority": "Only Jadeja and Shanaka remain (Yudhvir Singh released): needs a dual-skill lower-order all-rounder"},
+        {"department": "Pace Battery (Powerplay/Death)", "current_count": cnt.get("Pace", 0), "target_count": 6, "gap_level": lvl("Pace", 6), "priority": "Numbers at target with Archer, Burger, Shami, Sandeep; Maphaka, Milne, Deshpande, Sen released, so an elite death specialist is still the need"},
+        {"department": "Spin Department", "current_count": cnt.get("Spin", 0), "target_count": 5, "gap_level": lvl("Spin", 5), "priority": "Bishnoi, Brijesh Sharma and M Siddharth (traded in) with Jadeja: a second attacking wrist-spinner is still missing"}
     ]
     df_squad_comp = pd.DataFrame(squad_comp_data)
+    order = {"HIGH": 0, "MEDIUM": 1, "LOW": 2}
+    df_squad_comp = df_squad_comp.sort_values("gap_level", key=lambda c: c.map(order), kind="stable").reset_index(drop=True)
+    df_squad_comp["priority"] = ["Priority " + str(i + 1) + ": " + p for i, p in enumerate(df_squad_comp["priority"])]
 
     # 3. Define 5 Formal Squad Gaps & Role Requirements
     gaps_data = [
         {
             "gap_id": "GAP-01",
             "gap_name": "Explosive Pace-Hitting Opening Partner",
-            "tactical_need": "Partner Yashasvi Jaiswal with an aggressive top-order batter who dominates pace inside overs 1-6 (PP SR > 145) and avoids powerplay dot balls.",
+            "tactical_need": "Partner Yashasvi Jaiswal and Vaibhav Sooryavanshi with a pace-dominant top-order batter, ideally a keeper (Sanju Samson now plays for CSK), who dominates pace inside overs 1-6 (PP SR > 145) and avoids powerplay dot balls.",
             "coaching_mandate": "Aligns with Kumar Sangakkara's demand for immediate boundary pressure and Rahul Dravid's need for high scoring floors.",
             "target_metrics": "PP SR >= 145, Boundary% >= 20%, Dot% <= 35%"
         },
@@ -71,21 +123,21 @@ def run_squad_gap_analysis():
         {
             "gap_id": "GAP-03",
             "gap_name": "High-Pace Enforcer & Death-Overs Seamer",
-            "tactical_need": "Partner Sandeep Sharma at the death and replace the departing pace hostility with high velocity (>140 kph), nailing wide yorkers.",
+            "tactical_need": "Support Sandeep Sharma, Mohammed Shami and Jofra Archer at the death after the releases of Maphaka, Milne, Deshpande and Sen, adding high velocity (>140 kph) and wide yorkers.",
             "coaching_mandate": "Core requirement of Shane Bond's discipline doctrine: death overs economy strictly under 9.20 rpo with >40% dot balls.",
             "target_metrics": "Death Econ <= 9.20, Dot% >= 42%, Pressure Econ <= 8.50"
         },
         {
             "gap_id": "GAP-04",
             "gap_name": "Wicket-Taking Mystery / Attacking Wrist Spinner",
-            "tactical_need": "Replace the high-volume wicket threat of Yuzvendra Chahal through overs 7-15, attacking both right and left-hand batters.",
+            "tactical_need": "Add a second attacking spinner beside Ravi Bishnoi, M Siddharth (traded in) and Ravindra Jadeja for overs 7-15 (Chahal left RR before 2025), attacking both right and left-hand batters.",
             "coaching_mandate": "Sangakkara's matchup weapon: attacking middle-overs spin that forces false shots and maintains wicket pressure.",
             "target_metrics": "Middle Econ <= 7.80, Wkts/Match >= 1.25, High Threat Wkts >= 5"
         },
         {
             "gap_id": "GAP-05",
             "gap_name": "Dual-Skill Lower-Order All-Rounder",
-            "tactical_need": "Provide batting firepower at positions 7-8 (>150 SR) while delivering 2-3 reliable defensive overs.",
+            "tactical_need": "Provide batting firepower at positions 7-8 (>150 SR) while delivering 2-3 reliable defensive overs; RR retain only Jadeja and Shanaka as all-rounders.",
             "coaching_mandate": "Ensures tactical flexibility (TFI) across phases and insulates against batting collapses.",
             "target_metrics": "Versatility Factor >= 70.0%, Dual Contribution Index >= 65.0%"
         }
@@ -191,6 +243,10 @@ def run_squad_gap_analysis():
     # Save all squad gap datasets
     df_current_squad.to_csv(AUCTION_DIR / "rr_current_squad.csv", index=False)
     df_current_squad.to_csv(FINAL_DIR / "rr_current_squad.csv", index=False)
+
+    for _nm, _df in (("rr_released_players.csv", df_released), ("rr_context_17nov.csv", df_rr_ctx)):
+        _df.to_csv(AUCTION_DIR / _nm, index=False)
+        _df.to_csv(FINAL_DIR / _nm, index=False)
 
     df_squad_comp.to_csv(AUCTION_DIR / "rr_squad_composition.csv", index=False)
     df_squad_comp.to_csv(FINAL_DIR / "rr_squad_composition.csv", index=False)

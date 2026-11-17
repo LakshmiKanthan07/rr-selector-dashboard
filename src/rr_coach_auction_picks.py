@@ -20,6 +20,7 @@ import pandas as pd
 # Add parent directory to path
 sys.path.append(str(Path(__file__).resolve().parent))
 from config import ROOT_DIR, RESEARCH_DIR, OUTPUTS_DIR
+from feasibility_filter import build_master, rr_check, RR_CONTEXT
 
 AUCTION_DIR = OUTPUTS_DIR / "auction"
 AUCTION_DIR.mkdir(parents=True, exist_ok=True)
@@ -28,14 +29,6 @@ FINAL_DIR.mkdir(parents=True, exist_ok=True)
 COACHING_DIR = OUTPUTS_DIR / "coaching"
 STATS_DIR = OUTPUTS_DIR / "statistics"
 RANKINGS_DIR = OUTPUTS_DIR / "rankings"
-
-# Known franchise retention locks for IPL cycles (Bumrah, Suryakumar Yadav, Klaasen, Tilak Varma)
-# These represent Category A (Hypothetical/Benchmark Fits) unless released.
-FRANCHISE_RETENTION_LOCKS = {
-    "Jasprit Bumrah", "Suryakumar Yadav", "Heinrich Klaasen", "Tilak Varma",
-    "Namboori Tilak Varma", "Ruturaj Gaikwad", "Virat Kohli", "Rohit Sharma",
-    "Hardik Pandya", "Rashid Khan", "Shubman Gill", "Sanju Samson", "Yashasvi Jaiswal"
-}
 
 def determine_nationality(name):
     """Classify player nationality (Indian vs Overseas)."""
@@ -86,15 +79,28 @@ def run_auction_intelligence_engine():
         0.10 * merged['vf_score']
     ).round(2)
 
-    # Add nationality
+    # Nationality (overseas flag) and status come from the status master (IPL 2027 lists, 17 Nov 2026);
+    # players outside the master keep the legacy name-list nationality and are status G (unverified).
+    master = build_master().drop_duplicates('player_name').set_index('player_name')
     merged['nationality'] = merged['player_name'].apply(determine_nationality)
+    def _nat(r):
+        if r['player_name'] in master.index and pd.notna(master.loc[r['player_name'], 'overseas']):
+            return 'Overseas' if master.loc[r['player_name'], 'overseas'] == 1 else 'Indian'
+        return r['nationality']
+    merged['nationality'] = merged.apply(_nat, axis=1)
+    for col, dflt in (('status', 'G'), ('release_tier', 'n/a'), ('team_2026', ''), ('status_evidence', 'Not in verified status master')):
+        src = 'evidence' if col == 'status_evidence' else col
+        merged[col] = merged['player_name'].map(master[src]).fillna(dflt)
 
-    # Classify Target Category:
-    # Category A: Pure Cricketing & Coaching Fits (includes retention locks)
-    # Category B: Realistic Auction Targets (auction eligible / potential targets)
-    merged['target_category'] = merged['player_name'].apply(
-        lambda name: "Category A: Pure Benchmark Fit" if name in FRANCHISE_RETENTION_LOCKS else "Category B: Realistic Auction Target"
-    )
+    # RR feasibility (mandatory): purse / overseas-slot check using the last disclosed price (not a 2027 forecast)
+    ov = merged['player_name'].map(master['overseas'])
+    chk = [rr_check(n, o if pd.notna(o) else None) for n, o in zip(merged['player_name'], ov)]
+    merged['rr_feasible'] = [c[0] for c in chk]
+    merged['rr_fail_reason'] = [c[1] for c in chk]
+    # Category A = pure benchmark (everyone). Category B = status A/B and passes the RR purse/overseas check
+    # (i.e. not retained/contracted, not RR, not withdrawn, not unverified).
+    merged['target_category'] = np.where(merged['status'].isin(['A', 'B']) & merged['rr_feasible'],
+        "Category B: Realistic Auction Target", "Category A: Pure Benchmark Fit")
 
     # Add Coaching & Tactical Rationale
     def build_rationale(row):

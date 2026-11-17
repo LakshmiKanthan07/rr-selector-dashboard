@@ -351,8 +351,10 @@ def generate_auction_intelligence_report():
 
     story.append(Paragraph("1. Executive Summary & Roster Architecture", styles['h1']))
     story.append(Paragraph(
-        "Rajasthan Royals enter the IPL 2027 auction cycle with an elite retained domestic core anchored by "
-        "<b>Sanju Samson</b>, <b>Yashasvi Jaiswal</b>, <b>Riyan Parag</b>, <b>Dhruv Jurel</b>, and <b>Sandeep Sharma</b>. "
+        "Rajasthan Royals enter the IPL 2027 auction (16 Dec 2026, Goa) with 19 players, Rs 27.05 crore of purse, 6 open slots and 3 free overseas slots "
+        "(IPL 2027 retention lists of 17 Nov 2026, as reported by the press; no official list could be reached). The retained core is anchored by "
+        "<b>Yashasvi Jaiswal</b>, <b>Riyan Parag</b>, <b>Dhruv Jurel</b>, <b>Vaibhav Sooryavanshi</b>, <b>Ravindra Jadeja</b>, <b>Jofra Archer</b> and <b>Sandeep Sharma</b>, "
+        "with Mohammed Shami and M Siddharth traded in from LSG (Sanju Samson is now at CSK). "
         "To build a championship roster, auction recruitment must solve 5 structural gaps through data-backed targets "
         "combining pressure reliability with coaching philosophy alignment.", styles['body']
     ))
@@ -393,7 +395,7 @@ def generate_auction_intelligence_report():
     story.append(Spacer(1, 10))
 
     # Top Realistic Targets (Category B)
-    story.append(Paragraph("4. Top Realistic Auction Targets (Category B)", styles['h1']))
+    story.append(Paragraph("4. Top Realistic Auction Targets (Category B: released players, status as of 17 Nov 2026)", styles['h1']))
     df_real = pd.read_csv(AUCTION_DIR / "rr_realistic_auction_targets.csv").head(8)
     r_headers = ["Rank", "Player", "Role", "Origin", "PRI", "CPAS", "SGF", "CAFS", "Targeted Gap"]
     r_data = [[Paragraph(h, styles['header']) for h in r_headers]]
@@ -502,7 +504,7 @@ def generate_data_availability_report():
         ["DIRECTLY AVAILABLE", "Explicitly present in the raw delivery or match logs.", "batter_runs, bowler_runs_conceded, extras, is_four, is_six, bowler_wicket"],
         ["DERIVED", "Deterministically computed from verified raw event sequences.", "Required Run Rate (RRR), Innings Phase, Batting Average, Economy Rate, Dot%"],
         ["MODEL-ESTIMATED", "Estimated via reproducible statistical algorithms.", "Pressure Reliability Index (PRI), Contextual Wicket Quality (CWQ), CPAS, SGF, CAFS"],
-        ["EXTERNALLY VERIFIED", "Verified from official board and tournament releases.", "Player nationality, IPL auction retention status, coaching staff appointments"]
+        ["EXTERNALLY VERIFIED", "Taken from public reporting and board/tournament announcements; official IPL lists could not be reached.", "Player nationality, IPL 2027 retention/release status (press-reported lists, 17 Nov 2026), coaching staff appointments"]
     ]
     t_tax = Table([[Paragraph(c, styles['header'] if i==0 else styles['cell_bold'] if j==0 else styles['cell']) for j, c in enumerate(row)] for i, row in enumerate(tax_info)],
                   colWidths=[110, 190, 200])
@@ -614,7 +616,7 @@ def generate_final_quality_audit():
         ["Bounded Metric Compliance", "All scores strictly lie in [0, 100]%.", "Min/Max range check passed on all 560 players.", "APPROVED (100%)"],
         ["RR Historical Grounding", "Exact 77 matches and 61 players reconciled.", "Team ID 3 filtered across all 5 IPL seasons.", "APPROVED (100%)"],
         ["Documented Coaching Facts", "Leadership philosophies verified from official public sources.", "Coaching source register with 8 verifiable citations.", "APPROVED (100%)"],
-        ["Realistic Target Filtering", "Retention locks separated from actionable auction targets.", "Dual Category A vs Category B classification.", "APPROVED (100%)"],
+        ["Realistic Target Filtering", "Retained, traded, withdrawn and unverified players separated from actionable auction targets (status A/B only, plus RR purse and overseas-slot check).", "Dual Category A vs Category B classification.", "APPROVED (100%)"],
         ["Single-Page Dashboard Delivery", "All modules unified in single-page dashboard architecture.", "Interactive standalone HTML & Streamlit apps.", "APPROVED (100%)"]
     ]
     t_audit = Table([[Paragraph(c, styles['header'] if i==0 else styles['cell_bold'] if j==0 else styles['cell']) for j, c in enumerate(row)] for i, row in enumerate(audit_checks)],

@@ -12,7 +12,7 @@ from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, Table, Tab
 
 HERE = Path(__file__).parent
 ROOT = HERE.parents[1]
-OUT = ROOT / "SupeRR_Selector_RR_2027_Final" / "RR_IPL2027_Pressure_Reliability_Report.pdf"
+OUT = ROOT / "SupeRR_Selector_RR_2027_Final" / "RR_IPL2027_Round1_Final_Submission.pdf"
 D = json.loads((HERE / "dashboard_data.json").read_text(encoding="utf-8"))
 
 BLUE, NAVY, PINK = colors.HexColor("#254AA5"), colors.HexColor("#16295c"), colors.HexColor("#EA1A85")
@@ -50,12 +50,12 @@ def footer(c, d):
 gapre = re.compile(r"GAP-\d+")
 gid = lambda s: (gapre.search(s or "") or [None])[0]
 gaps = {g["gap_id"]: g for g in D["gaps"]}
-real = sorted([t for t in D["targets"] if t["realistic"] and t["cafs_score"] >= 70], key=lambda t: -t["cafs_score"])
-picks, used = [], set()
-for g, n in [("GAP-01", 2), ("GAP-02", 2), ("GAP-03", 3), ("GAP-04", 2), ("GAP-05", 1)]:
-    for t in [t for t in real if gid(t["primary_gap_targeted"]) == g and t["player_id"] not in used][:n]:
-        used.add(t["player_id"]); picks.append({**t, "gap": g})
-picks.sort(key=lambda t: -t["cafs_score"])
+F = D["feas"]
+STAT = {"A": "Available (in the official auction pool)", "B": "Released / reported registered; auction pool not yet official", "C": "Retained or traded: contracted by another franchise",
+        "D": "Ineligible", "E": "Already with RR", "F": "Withdrawn / retired / opted out", "G": "Status unverified (no reliable information)"}
+CON = F["constraint"]
+_by = {t["uid"]: t for t in D["targets"]}
+picks = [{**_by[p["uid"]], "gap": p["gap"], "price_cr": p["price_cr"]} for p in D["picks"]]
 
 def pool_row(t):
     bat = t["primary_role"] == "Batter"
@@ -98,8 +98,10 @@ tb, tw = D["topBat"][0], D["topBowl"][0]
 rb = lambda k, rows: sum(1 for r in rows if D["robust"][k][str(r["player_id"])] >= 90)
 S += [Paragraph("Summary", h2),
       Paragraph(f"We scored {M['bat_pool']} batters and {M['bowl_pool']} bowlers on {fi(M['deliveries'])} ball-by-ball deliveries from {fi(M['matches'])} IPL and T20I matches (2022 onwards). "
+                f"<b>The Round 1 rankings are pure data rankings; availability is applied separately in section 4.</b> "
                 f"The most reliable under pressure are <b>{tb['player']}</b> (batters, index {f1(tb['reliability_pct'])}) and <b>{tw['player']}</b> (bowlers, index {f1(tw['reliability_pct'])}). "
-                f"We then screened {M['auction_pool']} players against Rajasthan Royals' squad gaps to produce {len(picks)} recommended targets.", body),
+                f"We then screened {M['auction_pool']} players against Rajasthan Royals' squad gaps, the IPL 2027 retention and release lists as reported on {F['asOf']}, and RR's purse and overseas-slot limits to produce {len(picks)} recommended targets. "
+                f"The auction pool is not official until the register is published (due {F['auction']['final_register']}; auction {F['auction']['date']}, {F['auction']['venue']}), so released players are 'potentially available' rather than confirmed.", body),
       Spacer(1, 4),
       Paragraph(f"Rankings are not equally firm: {rb('bat', D['topBat'])} of the 10 batters and {rb('bowl', D['topBowl'])} of the 10 bowlers stay in the Top 10 in at least 90% of 2,000 random re-weightings of the score, so the lower places are weight-sensitive.", body),
       Spacer(1, 6), chart()]
@@ -198,9 +200,10 @@ S += [PageBreak(), Paragraph("2. Formulas and calculation details", h2),
           "Versatility VF (bowl) = 100 (0.40 min(PP balls,36)/36 + 0.40 min(death balls,36)/36 + 0.20 min(wickets,20)/20)",
           "",
           "CAFS = 0.40 PRI + 0.30 CPAS + 0.20 SGF + 0.10 VF"]),
-      Paragraph("A 'realistic target' is any player who is not on a short list of 13 assumed retention locks (e.g. Bumrah, Kohli, Rohit Sharma, Samson, Jaiswal).", small)]
+      Paragraph("A 'realistic target' is a player with status A or B (released by a franchise, so not retained, traded, already at RR, withdrawn or unverified) who also passes RR's purse and overseas-slot check.", small)]
 
-S += [PageBreak(), Paragraph("3. Top 10 most reliable under pressure", h2), Paragraph("Batters", h3)]
+S += [PageBreak(), Paragraph("3. Top 10 most reliable under pressure (the Round 1 submission)", h2),
+      Paragraph("<b>These are the Round 1 rankings.</b> They come only from the supplied ball-by-ball data: no reputation, retention or availability is applied, so retained or traded players such as Bumrah stay in. Which of these players Rajasthan Royals can actually acquire is a separate step in section 4.", body), Paragraph("Batters", h3)]
 rows = [["#", "Batter", "Inn", "Runs", "SR", "Press. SR", "Press. inn", "Sample", "PRI", "Top-10 %"]]
 for r in D["topBat"]:
     rows.append([r["rank"], r["player"], r["innings"], fi(r["total_runs"]), f1(r["strike_rate"]), f1(r["pressure_sr"]), r["pressure_innings"], r["sample_reliability"], f1(r["reliability_pct"]), f"{D['robust']['bat'][str(r['player_id'])]:.0f}%"])
@@ -214,19 +217,46 @@ S.append(Spacer(1, 4))
 S.append(Paragraph("Read the pressure columns with care: several batters have fewer than 10 pressure innings, so their pressure strike rates are indicative, not conclusive. "
                    "The index uses the whole profile (quality, consistency and pressure) rather than pressure alone.", small))
 
-S += [Paragraph("4. Rajasthan Royals context", h2)]
+
+S += [PageBreak(), Paragraph("4. Acquisition feasibility (status as of " + F["asOf"] + ")", h2),
+      Paragraph("The Top 10 above is the pure pressure ranking. To judge whether Rajasthan Royals can realistically acquire these players, every ranked player was walked in PRI order and given one status. "
+                "A player stays on the acquisition shortlist only if status is A or B and RR's purse / overseas-slot check passes. Statuses C to G are skipped and the next-ranked player is considered, until 10 qualify.", body)]
+S.append(tbl([["Status", "Meaning"]] + [[k, v] for k, v in STAT.items()], [16 * mm, 158 * mm]))
+S += [Spacer(1, 4), Paragraph("Evidence base: the IPL 2027 retention and release lists as reported on " + F["asOf"] + " (the deadline day), cross-checked between two press compilations. An official iplt20.com or BCCI page could not be reached, so these are press-reported lists, not an official download. "
+      "No official auction pool exists yet, so no player is status A; released players are B. The old Low / Medium / High release tiers are gone because retention is now known. Pakistani players are marked D because none has been selected in the IPL since 2008 (a long-standing practice; no written rule was found).", small)]
+ecol = [8 * mm, 14 * mm, 38 * mm, 18 * mm, 24 * mm, 16 * mm]
+def erow(r): return [r["shortlist_rank"], r["original_pri_rank"], r["player"], r["team_2026"] or "-", r["status"] + (" (overseas)" if r["overseas"] == 1 else ""), f1(r["pri_pct"])]
+S.append(Paragraph("Eligible Top 10 batters", h3))
+S.append(tbl([["#", "PRI rank", "Player", "2026 team", "Status", "PRI"]] + [erow(r) for r in F["eligBat"]], ecol))
+S.append(Paragraph("Eligible Top 10 bowlers", h3))
+S.append(tbl([["#", "PRI rank", "Player", "2026 team", "Status", "PRI"]] + [erow(r) for r in F["eligBowl"]], ecol))
+S.append(Paragraph("Players excluded while walking the ranking", h3))
+exrows = [["List", "PRI rank", "Player", "St.", "Reason / evidence"]] + [[r["list"], r["original_pri_rank"], r["player"], r["status"], Paragraph(r["reason"] + ": " + (r["evidence"] or ""), cell)] for r in F["excluded"]]
+S.append(tbl(exrows, [16 * mm, 14 * mm, 34 * mm, 8 * mm, 102 * mm]))
+S.append(Spacer(1, 4))
+_nb = sum(1 for r in F["excluded"] if r["list"] == "Batters"); _nw = sum(1 for r in F["excluded"] if r["list"] == "Bowlers")
+S.append(Paragraph(f"Result: the official lists remove {_nb} batters and {_nw} bowlers from the ranking (almost every high-ranked batter was retained, which is why the eligible batter list starts at PRI rank {F['eligBat'][0]['original_pri_rank']}). "
+                   f"Both eligible lists have 10 names, all status B. RR can add at most {CON['free_overseas_slots']} overseas players, yet {F['eligOverseas']['bat']} of the 10 eligible batters and {F['eligOverseas']['bowl']} of the 10 eligible bowlers are overseas, so these lists are a ranking, not a buy list.", body))
+S.append(Paragraph("Acquisition priority board", h3))
+S.append(Paragraph("Score = PRI x availability weight (status A 1.0, status B 0.8) x 0.85 for overseas players (RR can add at most 3 overseas players). These weights are judgement values.", small))
+bb = [["#", "Player", "PRI rank", "Team", "Status", "Score"]]
+for lst, title in (("Batters", "Batters"), ("Bowlers", "Bowlers")):
+    S.append(Paragraph(title, h3))
+    S.append(tbl(bb + [[r["acq_rank"], r["player"], r["original_pri_rank"], r["team_2026"], r["status"], f1(r["afs"])] for r in F["board"] if r["list"] == lst], [8 * mm, 44 * mm, 18 * mm, 20 * mm, 24 * mm, 16 * mm]))
+
+S += [PageBreak(), Paragraph("5. Rajasthan Royals context", h2)]
 ev = D["tenure"]
 S.append(Paragraph(f"RR won {M['rr_wins']} of {M['rr_matches']} matches in the pack ({M['rr_wins'] / M['rr_matches'] * 100:.1f}%). "
                    f"Under the {ev[0]['era_name']} ({ev[0]['seasons']}) they won {ev[0]['win_rate_pct']:.1f}% with a batting strike rate of {f1(ev[0]['batting_sr'])} and economy {f2(ev[0]['bowling_economy'])}; "
                    f"in the {ev[1]['era_name']} ({ev[1]['seasons']}) they won {ev[1]['win_rate_pct']:.1f}% with a strike rate of {f1(ev[1]['batting_sr'])} but economy of {f2(ev[1]['bowling_economy'])}. "
                    "The team scores faster but concedes more, which is why the squad gaps below lean on bowling as well as batting.", body))
-core = ", ".join(f"{s['player_name']} ({s['role']})" for s in D["squad"])
-S.append(Paragraph(f"<b>Retained core assumed:</b> {core}.", body))
+core = ", ".join(f"{s['player_name']}" for s in D["squad"])
+S.append(Paragraph(f"<b>RR squad for IPL 2027 ({len(D['squad'])} players, retention lists of {F['asOf']}; Shami and M Siddharth traded in from LSG, Curran traded to LSG):</b> {core}. RR hold {sum(1 for s in D['squad'] if s['nationality']=='Overseas')} overseas players (cap 8, so {CON['free_overseas_slots']} free), have Rs {CON['purse_cr']} crore of purse and {CON['open_slots']} open slots. Released: {', '.join(r['player_name'] for r in F['rrReleased'] if r['action']=='Released')}.", body))
 rows = [["Gap", "What RR needs"]] + [[Paragraph("<b>" + g["gap_id"] + "</b> " + g["gap_name"], cell), Paragraph(g["tactical_need"], cell)] for g in D["gaps"]]
 S += [Spacer(1, 3), tbl(rows, [62 * mm, 112 * mm])]
 
-S += [PageBreak(), Paragraph("5. Recommended targets and squad fit", h2),
-      Paragraph("Targets are the best <i>realistic</i> candidates for each gap with a Combined Auction Fit Score (CAFS) of 70 or more. CAFS = 0.40 PRI + 0.30 CPAS + 0.20 SGF + 0.10 VF (section 2.6). "
+S += [PageBreak(), Paragraph("6. Recommended targets and squad fit", h2),
+      Paragraph("Targets are the best candidates for each gap with a Combined Auction Fit Score (CAFS) of 70 or more and status A or B, who then pass RR's purse and overseas-slot check (below). CAFS = 0.40 PRI + 0.30 CPAS + 0.20 SGF + 0.10 VF (section 2.6). "
                 "Gaps with no candidate above 70 are left open rather than filled with a weak name.", body), Spacer(1, 4)]
 for t in picks:
     bat, pl, n = pool_row(t); g = gaps[t["gap"]]
@@ -243,7 +273,8 @@ for t in picks:
         if rbv is not None and rbv < 70: risks.append(f"rank is weight-sensitive (Top 10 in {rbv:.0f}% of re-weightings)")
     else:
         ev_txt, risks = "No pressure statistics in the scored pool.", []
-    if t["nationality"] == "Overseas": risks.append("uses an overseas slot")
+    if t["nationality"] == "Overseas": risks.append(f"uses 1 of RR's {CON['free_overseas_slots']} free overseas slots")
+    risks.append(("released by " + t["team_2026"] if t["team_2026"] else "reported registered") + f"; not yet in an official auction pool (status {t['status']}); price not modelled" + (f"; last price Rs {t['price_cr']} cr" if t.get("price_cr") else ""))
     block = [Paragraph(f"<b>{t['player_name']}</b> | {t['primary_role']}, {t['nationality']} | CAFS {f1(t['cafs_score'])} | fills {t['gap']} ({g['gap_name']})", h3),
              Paragraph(f"<b>Evidence.</b> {ev_txt} PRI {f1(t['pri_score'])}, coach fit {f1(t['cpas_score'])}, gap fit {f1(t['sgf_score'])}.", body),
              Paragraph(f"<b>How he strengthens RR.</b> {g['tactical_need']}", body),
@@ -254,7 +285,15 @@ if open_gaps:
     S.append(Paragraph("<b>Gaps with no candidate above CAFS 70:</b> " + ", ".join(f"{g} ({gaps[g]['gap_name']})" for g in open_gaps) +
                        ". These need a wider search or a trade rather than a name from this list.", body))
 
-S += [Paragraph("6. Limitations", h2)]
+S.append(Paragraph("RR feasibility check (mandatory)", h3))
+S.append(Paragraph(f"RR have Rs {CON['purse_cr']} crore, {CON['open_slots']} open squad slots and {CON['free_overseas_slots']} free overseas slots ({8 - CON['free_overseas_slots']} of 8 used). "
+                   f"A target fails if it needs an overseas slot RR cannot free, or if last disclosed prices clearly exceed the purse (more than {round((CON['purse_tolerance'] - 1) * 100)}% over). "
+                   f"Last prices are not 2027 forecasts and most released players have none disclosed here, so the purse test is weak and the overseas test binds. The {len(picks)} picks use {CON['picks_overseas']} of {CON['free_overseas_slots']} overseas slots.", body))
+if CON["fails"]:
+    S.append(tbl([["Player", "Gap", "CAFS", "Why it fails RR feasibility"]] + [[f["player"], f["gap"], f1(f["cafs"]), Paragraph(f["reason"], cell)] for f in CON["fails"]], [38 * mm, 18 * mm, 14 * mm, 104 * mm]))
+    S.append(Spacer(1, 4))
+
+S += [Paragraph("7. Limitations", h2)]
 c = [v for v in D["validation"] if "Correlation" in v["test_category"]]
 for t in [f"The coach-alignment score overlaps heavily with the pressure index (correlation {c[0]['measured_value']} for batters, {c[1]['measured_value']} for bowlers; our own test required below 0.85). "
           "The shortlist is therefore mainly a pressure-reliability ranking filtered by squad need, not an independent second opinion.",
@@ -262,10 +301,8 @@ for t in [f"The coach-alignment score overlaps heavily with the pressure index (
           "The source scoring file tags every bowler to the pace gap, and its spin flag compares against lowercase 'spin' while the data says 'Spin', so the spin adjustments never apply. "
           "This understates gap-fit scores for spinners against the spin gap and overstates them against the pace gap. "
           "We assigned bowlers to the pace or spin gap by bowling type; CAFS values are unchanged.",
-          "'Realistic target' only means 'not on a short, hand-written retention list'. It is not auction-eligibility data.",
-          "Nationality is taken from the national team a player appeared for in the pack's T20I series (India means Indian, any other team means overseas). "
-          "Players with no T20I record in the pack fall back to the pipeline's hand-written name list, so a few overseas names could be mislabelled.",
-          "Auction prices, retention lists and player availability are not in the data pack. 'Realistic targets' is a model filter, not market knowledge.",
+                    "Nationality and overseas status come from the verified status list where a player is listed, otherwise from the national team in the pack's T20I series; unlisted players are status G (unverified) and are never recommended.",
+          "Availability comes from the IPL 2027 retention and release lists as reported on " + F["asOf"] + ", not the data pack. An official iplt20.com or BCCI list could not be reached, and the official auction pool is not out until " + F["auction"]["final_register"] + "; re-check then (B becomes A). Auction prices are not modelled; the purse check uses last disclosed prices only.",
           "Coaching-staff philosophies (Dravid, Sangakkara, Bond, Rathour) were translated into measurable proxies; these are judgement calls, not facts from the data."]:
     S.append(Paragraph(t, bul, bulletText="•"))
 SimpleDocTemplate(str(OUT), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm, topMargin=18 * mm, bottomMargin=16 * mm,
