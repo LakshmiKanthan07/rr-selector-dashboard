@@ -11,23 +11,23 @@ Round 1: Identify the Most Reliable Players Under Pressure
 
 We scored **311 batters and 249 bowlers** on **194,014 ball-by-ball deliveries** from 883 IPL and T20I matches (2022 onwards) and ranked them by a **Pressure Reliability Index (PRI)**: a 0-100 score that rewards players who stay effective, and consistent, in high-pressure match situations. We then screened 560 player profiles against Rajasthan Royals' squad gaps and the IPL 2027 retention/release lists of 17 Nov 2026 to produce **4 recommended auction targets**. The Top 10 tables below are the pure Round 1 data ranking: retention and availability are applied separately.
 
-### Final Top 10: available AND able to handle pressure (status 17 Nov 2026)
+### Final Top 10: available AND able to handle pressure (status 18 Nov 2026)
 A player is selected only if he is available to RR (released by his franchise, status B: the official auction pool is not published until 3 Dec 2026) **and** his Pressure Reliability Index is in the top 40% of the pool. Retained players such as Bumrah fail the availability test.
 
 | # | Batter | Bowler |
 |---|---|---|
 | 1 | Pathum Nissanka | Matheesha Pathirana |
 | 2 | Towhid Hridoy | Mustafizur Rahman |
-| 3 | Jacob Bethell | Wanindu Hasaranga |
-| 4 | George Linde | Trent Boult |
-| 5 | Nitish Rana | Taskin Ahmed |
-| 6 | Shimron Hetmyer | Avesh Khan |
-| 7 | Mahipal Lomror | Mitchell Starc |
-| 8 | Rahul Tripathi | Blessing Muzarabani |
-| 9 | Matthew Short | Tushar Deshpande |
-| 10 | Nehal Wadhera | Hasan Mahmud |
+| 3 | George Linde | Wanindu Hasaranga |
+| 4 | Nitish Rana | Trent Boult |
+| 5 | Shimron Hetmyer | Taskin Ahmed |
+| 6 | Mahipal Lomror | Avesh Khan |
+| 7 | Rahul Tripathi | Blessing Muzarabani |
+| 8 | Matthew Short | Tushar Deshpande |
+| 9 | Nehal Wadhera | Hasan Mahmud |
+| 10 | Ben Duckett | Dushmantha Chameera |
 
-Caveats: availability is press-reported; Bangladeshi players are only reported as registered; Starc's "opted out" status is unclear; RR can add at most 3 overseas players.
+Caveats: availability is press-reported; Bangladeshi players are only reported as registered; Mitchell Starc (opted out of IPL 2027) and Jacob Bethell (injured) were removed on 18 Nov 2026 and replaced by the next eligible players, Dushmantha Chameera and Ben Duckett; RR can add at most 3 overseas players.
 
 ### Pressure-only ranking (before availability)
 Top 10 most reliable batters and bowlers under pressure:
@@ -51,12 +51,12 @@ Picks are released players (status B, the official auction pool is not published
 | Gap in the RR squad | Targets |
 |---|---|
 | Explosive opening partner | no realistic candidate above CAFS 70 |
-| Middle-order spin counter and chase finisher | Pathum Nissanka, Nitish Rana (Bethell and Towhid Hridoy fail the overseas-slot check) |
+| Middle-order spin counter and chase finisher | Pathum Nissanka, Nitish Rana (Towhid Hridoy fails the overseas-slot check) |
 | High-pace death-overs bowler | Matheesha Pathirana, Mustafizur Rahman (Boult, Taskin Ahmed, Hasan Mahmud fail the overseas-slot check) |
 | Attacking spinner | none (Hasaranga fails the overseas-slot check) |
 | Lower-order all-rounder | no candidate cleared the quality bar |
 
-The dashboard and report also show an **eligible Top 10** (original PRI order, released players only): batters Nissanka, Towhid Hridoy, Bethell, Linde, Nitish Rana, Hetmyer, Lomror, Tripathi, Short, Wadhera; bowlers Pathirana, Mustafizur, Hasaranga, Boult, Taskin Ahmed, Avesh Khan, Starc, Muzarabani, Deshpande, Hasan Mahmud.
+The dashboard and report also show an **eligible Top 10** (original PRI order, released players only): batters Nissanka, Towhid Hridoy, Linde, Nitish Rana, Hetmyer, Lomror, Tripathi, Short, Wadhera, Duckett; bowlers Pathirana, Mustafizur, Hasaranga, Boult, Taskin Ahmed, Avesh Khan, Muzarabani, Deshpande, Hasan Mahmud, Chameera.
 
 Each pick has its evidence, squad fit and risks in the report and on the dashboard.
 

@@ -92,7 +92,7 @@ CONFLICTS = {"Himmat Singh": "owner list: retained by LSG; Cricket News/Yahoo: r
 NOTES = [
  "Himmat Singh: owner list says retained by LSG, Cricket News/Yahoo says released - unresolved.",
  "Mahipal Lomror, Robin Minz (MI) and Swapnil Singh (RCB) appear as released only in the Cricket News/Yahoo roundup.",
- "Cricket News/Yahoo (17 Nov) calls Travis Head 'opted out of IPL 2027' and Mitchell Starc 'opted out'; owner list says Head 'skipping IPL 2027'. Head -> F; Starc is released but his availability is ambiguous (B, flagged).",
+ "Cricket News/Yahoo (17 Nov) calls Travis Head 'opted out of IPL 2027' and Mitchell Starc 'opted out'; owner list says Head 'skipping IPL 2027'. Head -> F; Starc is released and has opted out (confirmed 18 Nov), so Starc -> F; Jacob Bethell is released by RCB but injured for IPL 2027 -> F.",
  "Ravindra Jadeja: owner list shows him as retained by RR, Yahoo as traded in from CSK. Either way he is with RR (E).",
  "Sam Curran: both sources show RR -> LSG trade, so he is no longer with RR (C).",
  "DC section of the owner list notes Kyle Jamieson and Lungi Ngidi retention is reported by only some outlets (SportsTak, Cricket Times), not Wisden - treated as C with that caveat.",

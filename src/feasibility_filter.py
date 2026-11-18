@@ -45,7 +45,8 @@ Mahendra Singh Dhoni|CSK|India|0|F|n/a|Retired from playing, released by CSK and
 Ajinkya Rahane|KKR|India|0|F|n/a|Retired (owner list 17 Nov; Cricket News/Yahoo 17 Nov)
 Andre Russell||West Indies|1|F|n/a|Retired from IPL 30 Nov 2025 (Wikipedia personnel changes; carried from 13 Nov snapshot, not re-checked)
 Dinesh Karthik||India|0|F|n/a|Retired from all cricket in Jun 2025 (prior knowledge, NOT re-verified this session)
-Mitchell Starc|DC|Australia|1|B|n/a|Released by DC (Rs 11.75 cr). Cricket News/Yahoo 17 Nov says he opted out: unclear whether that means unavailable for IPL 2027, so treated as unconfirmed
+Mitchell Starc|DC|Australia|1|F|n/a|Released by DC (Rs 11.75 cr); has opted out of IPL 2027 (Cricket News/Yahoo 17 Nov; confirmed by user 18 Nov 2026), so unavailable
+Jacob Bethell|RCB|England|1|F|n/a|Released by RCB (last price Rs 2.6 cr); ruled out of IPL 2027 through injury (user-confirmed 18 Nov 2026; not independently verified)
 Taskin Ahmed||Bangladesh|1|B|n/a|One of 7 Bangladeshi players reported registered for the auction (BCB confirmation 12-13 Nov; Outlook/SportsCafe/Daily Star). Registration is not the official auction list; 2026 team not found
 Hasan Mahmud||Bangladesh|1|B|n/a|One of 7 Bangladeshi players reported registered for the auction (BCB 12-13 Nov, press). Not the official auction list; 2026 team not found
 Towhid Hridoy||Bangladesh|1|B|n/a|One of 7 Bangladeshi players reported registered for the auction (BCB 12-13 Nov, press). Not the official auction list; 2026 team not found
